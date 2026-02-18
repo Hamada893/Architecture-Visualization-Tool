@@ -1,17 +1,17 @@
 import Navbar from "components/Navbar";
-import type { Route } from "./+types/home";
 import { Button } from "components/ui/Button";
 import { ArrowRight, ArrowUpRight, Clock, Layers} from "lucide-react"
 import Upload from "components/upload"
-
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
-  ];
-}
+import { useNavigate } from "react-router";
 
 export default function Home() {
+  const navigate = useNavigate()
+
+  const handleUploadComplete = async (base64Image: string) => {
+    const newId = Date.now().toString()
+
+    navigate(`/visualizer/${newId}`)
+  }
   
   return (
     <div className="home">
@@ -28,7 +28,7 @@ export default function Home() {
         <h1>Build Your Dream Home in 3D with AI Visualization in seconds</h1>
 
         <p className="subtitle">
-        Turn your 2D architecture plans into stunning 3D visualizations in minutes with our AI-powered platform.
+        Turn your 2D architecture plans into stunning 3D visualizations in minutes with this AI-powered platform.
         </p>
 
         <div className="actions">
@@ -58,7 +58,7 @@ export default function Home() {
                 <p>Support JPG, PNG formats up to 10MB</p>
               </div>  
 
-              <Upload />
+              <Upload onComplete={handleUploadComplete}/>
           </div>
         </div>
       </section>
