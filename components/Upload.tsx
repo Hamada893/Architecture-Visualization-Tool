@@ -13,6 +13,8 @@ type UploadProps = {
 }
 
 const Upload = ({ onComplete }: UploadProps) => {
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg']
+
   const [file, setFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -23,7 +25,10 @@ const Upload = ({ onComplete }: UploadProps) => {
     if (!isSignedIn) return
 
     const reader = new FileReader()
-
+    reader.onerror = () => {
+      setFile(null)
+      setProgress(0)
+    }
     reader.onload = () => {
       const result = reader.result as string
       const base64Data = result.includes(',')
@@ -61,7 +66,7 @@ const Upload = ({ onComplete }: UploadProps) => {
     if (!isSignedIn) return
 
     const selectedFile = event.target.files?.[0]
-    if (!selectedFile) return
+    if (!selectedFile || !allowedTypes.includes(selectedFile.type)) return
 
     setFile(selectedFile)
     processFile(selectedFile)
@@ -92,7 +97,7 @@ const Upload = ({ onComplete }: UploadProps) => {
     setIsDragging(false)
 
     const droppedFile = event.dataTransfer.files?.[0]
-    if (!droppedFile) return
+    if (!droppedFile || !allowedTypes.includes(droppedFile.type)) return
 
     setFile(droppedFile)
     processFile(droppedFile)
