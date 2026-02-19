@@ -1,7 +1,7 @@
 import Navbar from "components/Navbar";
 import { Button } from "components/ui/Button";
 import { ArrowRight, ArrowUpRight, Clock, Layers} from "lucide-react"
-import Upload from "components/upload"
+import Upload from "components/Upload";
 import { useNavigate } from "react-router";
 
 export default function Home() {
