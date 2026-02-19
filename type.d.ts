@@ -72,12 +72,6 @@ interface UploadProps {
   className?: string;
 }
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "ghost" | "outline";
-  size?: "sm" | "md" | "lg";
-  fullWidth?: boolean;
-}
-
 interface CardProps {
   children: React.ReactNode;
   className?: string;

@@ -5,17 +5,18 @@ import puter from "@heyputer/puter.js"
 export const getOrCreateHostingConfig = async (): Promise<HostingConfig | null> => {
   const existing = (await puter.kv.get(HOSTING_CONFIG_KEY)) as HostingConfig | null
 
-  if (existing ?.subdomain) return { subdomain: existing.subdomain }
+  if (existing?.subdomain) return { subdomain: existing.subdomain }
 
   const subdomain = createHostingSlug()
 
   try {
     const created = await puter.hosting.create(subdomain, '.')
+    await puter.kv.set(HOSTING_CONFIG_KEY, { subdomain: created.subdomain })
     return { subdomain: created.subdomain }
     
 
   } catch (e) {
-    console.warn(`Could not find subdomain: ${e}`)
+    console.warn(`Could not create hosting subdomain: ${e}`)
     return null
   }
 }
