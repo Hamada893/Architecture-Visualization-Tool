@@ -52,10 +52,6 @@ const Upload = ({ onComplete }: UploadProps) => {
       }, PROGRESS_INTERVAL_MS)
     }
 
-    reader.onerror = () => {
-      setFile(null)
-      setProgress(0)
-    }
 
     reader.readAsDataURL(selectedFile)
   }
