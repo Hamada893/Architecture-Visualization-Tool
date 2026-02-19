@@ -15,24 +15,60 @@ export const getCurrentUser = async () => {
 }
 
 export const createProject = async ({ item }: CreateProjectParams): 
-  Promise<DesignItem | null | undefined> => {
+  Promise<DesignItem | null> => {
     const projectId = item.id
 
-    const hosting = await getOrCreateHostingConfig()
-    const hostedSource = projectId ? await uploadImageToHosting({hosting, url: item.sourceImage, projectId, label: 'source'}) : null
+    let hosting: HostingConfig | null = null
+    try {
+      hosting = await getOrCreateHostingConfig()
+    } catch (e) {
+      console.error("getOrCreateHostingConfig() threw while creating project", {
+        projectId,
+        error: e,
+      })
+      return null
+    }
 
-    const hostedRender = projectId && item.renderedImage ? 
-    await uploadImageToHosting({hosting, url: item.renderedImage, projectId, label: 'rendered'})
-    : null
+    if (!hosting) {
+      console.error("getOrCreateHostingConfig() returned null, cannot host project images", {
+        projectId,
+        sourceImagePreview: item.sourceImage?.slice?.(0, 64),
+      })
+      return null
+    }
+
+    const hostedSource = projectId
+      ? await uploadImageToHosting({
+          hosting,
+          url: item.sourceImage,
+          projectId,
+          label: "source",
+        })
+      : null
+
+    const hostedRender =
+      projectId && item.renderedImage
+        ? await uploadImageToHosting({
+            hosting,
+            url: item.renderedImage,
+            projectId,
+            label: "rendered",
+          })
+        : null
 
     const resolvedSource = hostedSource?.url
-    ? hostedSource.url
-    : isHostedUrl(item.sourceImage)
-      ? item.sourceImage
-      : ''
+      ? hostedSource.url
+      : isHostedUrl(item.sourceImage)
+        ? item.sourceImage
+        : ""
 
     if(!resolvedSource) {
-      console.warn(`Failed to host source image, skipping save`)
+      console.warn("Failed to resolve source image for project, skipping save", {
+        projectId,
+        hosting,
+        hostedSource,
+        originalSourceSample: item.sourceImage?.slice?.(0, 64),
+      })
       return null
     }
 
@@ -49,16 +85,37 @@ export const createProject = async ({ item }: CreateProjectParams):
       ...rest
      } = item
 
-     const payload = {
+     const payload: DesignItem = {
       ...rest, 
       sourceImage: resolvedSource,
-      renderedImage: resolvedRender
+      renderedImage: resolvedRender ?? null
      }
 
      try {
-      return payload
+      if (projectId) {
+        await puter.kv.set(`project:${projectId}`, payload)
+      }
      } catch (e) {
-      console.log(`Failed to save project: ${e}`)
-      return null
+      console.error("Failed to persist project", {
+        projectId,
+        error: e,
+      })
      }
+
+     return payload
   }
+
+export const getProject = async (id: string): Promise<DesignItem | null> => {
+  if (!id) return null
+
+  try {
+    const stored = (await puter.kv.get(`project:${id}`)) as DesignItem | null
+    return stored ?? null
+  } catch (e) {
+    console.error("Failed to load project", {
+      projectId: id,
+      error: e,
+    })
+    return null
+  }
+}
