@@ -1,4 +1,6 @@
 import puter from "@heyputer/puter.js"
+import { getOrCreateHostingConfig, uploadImageToHosting } from "./puter.hosting"
+import { isHostedUrl } from "./utils"
 
 export const signIn = async () => await puter.auth.signIn()
 
@@ -12,23 +14,108 @@ export const getCurrentUser = async () => {
   }
 }
 
-export type ProjectData = {
-  sourceImage?: string | null
-  name?: string | null
-}
+export const createProject = async ({ item }: CreateProjectParams): 
+  Promise<DesignItem | null> => {
+    const projectId = item.id
 
-export const getProject = async (id: string): Promise<ProjectData | null> => {
-  try {
-    const kv = puter.kv
-    if (!kv) return null
-    const raw = await kv.get(`project:${id}`)
-    if (raw == null || typeof raw !== 'object') return null
-    const o = raw as Record<string, unknown>
-    return {
-      sourceImage: typeof o.sourceImage === 'string' ? o.sourceImage : null,
-      name: typeof o.name === 'string' ? o.name : null,
+    let hosting: HostingConfig | null = null
+    try {
+      hosting = await getOrCreateHostingConfig()
+    } catch (e) {
+      console.error("getOrCreateHostingConfig() threw while creating project", {
+        projectId,
+        error: e,
+      })
+      return null
     }
-  } catch {
+
+    if (!hosting) {
+      console.error("getOrCreateHostingConfig() returned null, cannot host project images", {
+        projectId,
+        sourceImagePreview: item.sourceImage?.slice?.(0, 64),
+      })
+      return null
+    }
+
+    const hostedSource = projectId
+      ? await uploadImageToHosting({
+          hosting,
+          url: item.sourceImage,
+          projectId,
+          label: "source",
+        })
+      : null
+
+    const hostedRender =
+      projectId && item.renderedImage
+        ? await uploadImageToHosting({
+            hosting,
+            url: item.renderedImage,
+            projectId,
+            label: "rendered",
+          })
+        : null
+
+    const resolvedSource = hostedSource?.url
+      ? hostedSource.url
+      : isHostedUrl(item.sourceImage)
+        ? item.sourceImage
+        : ""
+
+    if(!resolvedSource) {
+      console.warn("Failed to resolve source image for project, skipping save", {
+        projectId,
+        hosting,
+        hostedSource,
+        originalSourceSample: item.sourceImage?.slice?.(0, 64),
+      })
+      return null
+    }
+
+    const resolvedRender = hostedRender?.url
+    ? hostedRender.url
+    : item.renderedImage && isHostedUrl(item.renderedImage)
+      ? item.renderedImage
+      : undefined
+
+    const { 
+      sourcePath: _sourcePath,
+      renderedPath: _renderedPath,
+      publicPath: _publicPath,
+      ...rest
+     } = item
+
+     const payload: DesignItem = {
+      ...rest, 
+      sourceImage: resolvedSource,
+      renderedImage: resolvedRender ?? null
+     }
+
+     try {
+      if (projectId) {
+        await puter.kv.set(`project:${projectId}`, payload)
+      }
+     } catch (e) {
+      console.error("Failed to persist project", {
+        projectId,
+        error: e,
+      })
+     }
+
+     return payload
+  }
+
+export const getProject = async (id: string): Promise<DesignItem | null> => {
+  if (!id) return null
+
+  try {
+    const stored = (await puter.kv.get(`project:${id}`)) as DesignItem | null
+    return stored ?? null
+  } catch (e) {
+    console.error("Failed to load project", {
+      projectId: id,
+      error: e,
+    })
     return null
   }
 }

@@ -31,9 +31,7 @@ const Upload = ({ onComplete }: UploadProps) => {
     }
     reader.onload = () => {
       const result = reader.result as string
-      const base64Data = result.includes(',')
-        ? result.split(',')[1] ?? result
-        : result
+      const dataUrl = result
 
       let currentProgress = 0
       setProgress(0)
@@ -47,17 +45,13 @@ const Upload = ({ onComplete }: UploadProps) => {
 
           window.setTimeout(() => {
             if (isSignedIn) {
-              onComplete?.(base64Data)
+              onComplete?.(dataUrl)
             }
           }, REDIRECT_DELAY_MS)
         }
       }, PROGRESS_INTERVAL_MS)
     }
 
-    reader.onerror = () => {
-      setFile(null)
-      setProgress(0)
-    }
 
     reader.readAsDataURL(selectedFile)
   }
