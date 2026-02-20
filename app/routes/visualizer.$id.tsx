@@ -12,10 +12,11 @@ const VisualizerId = () => {
   const locationState = (location.state || null) as VisualizerLocationState | null
 
   const [initialImage, setInitialImage] = useState<string | null>(locationState?.initialImage ?? null)
-  const {initialRender} = location.state || {}
+  const initialRender = (locationState as { initialRender?: string } | null)?.initialRender
   const [currentImage, setCurrentImage] = useState(initialRender)
   const [name, setName] = useState<string | null>(locationState?.name ?? null)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const hasInitialGenerated = useRef(false)
 
   const handleBack = () => navigate('/')
@@ -24,6 +25,7 @@ const VisualizerId = () => {
     if (!initialImage) return
 
     try {
+      setErrorMessage(null)
       setIsProcessing(true)
       const result = await generate3DView({ sourceImage: initialImage })
 
@@ -33,14 +35,16 @@ const VisualizerId = () => {
 
       }
     } catch (e) {
+      const errorMsg = e instanceof Error ? e.message : 'Unknown error occurred'
       console.error(`Generation failed: ${e}`)
+      setErrorMessage(`Failed to generate visualization. ${errorMsg}`)
     } finally {
       setIsProcessing(false)
     }
   }
 
   useEffect(() => {
-    if (!initialImage || !hasInitialGenerated) return 
+    if (!initialImage || hasInitialGenerated.current) return 
 
     if (initialRender) {
       setCurrentImage(initialRender)
@@ -94,7 +98,7 @@ const VisualizerId = () => {
           <div className="panel-header">
             <div className="panel-meta">
               <p>Project</p>
-              <h2>{'Untitled Project'}</h2>
+              <h2>{name || 'Untitled Project'}</h2>
               <p className="note">Created by You</p>
             </div>
             
@@ -117,6 +121,18 @@ const VisualizerId = () => {
             </div>
           </div>
 
+          {errorMessage && (
+            <div className="error-banner" style={{ 
+              padding: '12px 16px', 
+              backgroundColor: '#fee2e2', 
+              color: '#991b1b', 
+              borderRadius: '6px', 
+              margin: '16px 0',
+              border: '1px solid #fecaca'
+            }}>
+              <p style={{ margin: 0 }}>{errorMessage}</p>
+            </div>
+          )}
 
           <div className={`render-area ${isProcessing ? 'is-processing' : ''}`}>
             {currentImage ? (
