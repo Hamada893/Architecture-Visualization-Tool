@@ -4,6 +4,8 @@ import { getProject } from "lib/puter.action"
 import { generate3DView } from "lib/ai.action"
 import { Box, Download, RefreshCcw, Share2, X } from 'lucide-react'
 import { Button } from "components/ui/Button"
+import { Bouncy } from 'ldrs/react'
+import 'ldrs/react/Bouncy.css'
 
 const VisualizerId = () => {
   const navigate = useNavigate()
@@ -157,8 +159,8 @@ const VisualizerId = () => {
               <div className="render-overlay">
                 <div className="rendering-card">
                   <RefreshCcw className="spinner"/>
-                  <span className="title">Rendering...</span>
-                  <span className="subtitle">Generating your 3D visualization... </span>
+                  <span className="title">Rendering <Bouncy speed='1.3' size='15'/></span>
+                  <span className="subtitle">Generating your 3D visualization <Bouncy speed='1.3' size='10' color='gray'/> </span>
                 </div>
               </div>
             )}
