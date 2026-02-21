@@ -12,9 +12,9 @@ export default function Home() {
   const isCreatingProjectRef = useRef(false)
 
   const handleUploadComplete = async (base64Image: string) => {
-    try {
-      if (!isCreatingProjectRef) return false
+      if (isCreatingProjectRef.current) return false
       isCreatingProjectRef.current = true
+      try {
       const newId = Date.now().toString()
       const name = `Residence ${newId}`
       const newItem = {
@@ -42,8 +42,8 @@ export default function Home() {
 
       return true
     } finally {
-      isCreatingProjectRef.current = false
-    }
+        isCreatingProjectRef.current = false
+      }
     
   }
   

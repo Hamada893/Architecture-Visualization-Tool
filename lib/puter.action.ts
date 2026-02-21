@@ -15,11 +15,11 @@ export const getCurrentUser = async () => {
   }
 }
 
-export const createProject = async ({ item, visibility = "private" }: CreateProjectParams): 
+export const createProject = async ({ item, visibility = "private" }: CreateProjectParams):
   Promise<DesignItem | null> => {
-    if (!PUTER_WORKER_URL) {
-      console.warn(`Missing VITE_PUTER_WORKER_URL; skip history`)
-      return null
+    const hasWorker = Boolean(PUTER_WORKER_URL)
+    if (!hasWorker) {
+      console.warn(`Missing VITE_PUTER_WORKER_URL; using local KV only`)
     }
 
     const projectId = item.id
@@ -84,7 +84,7 @@ export const createProject = async ({ item, visibility = "private" }: CreateProj
       ? item.renderedImage
       : undefined
 
-    const { 
+    const {
       sourcePath: _sourcePath,
       renderedPath: _renderedPath,
       publicPath: _publicPath,
@@ -92,7 +92,7 @@ export const createProject = async ({ item, visibility = "private" }: CreateProj
      } = item
 
      const payload: DesignItem = {
-      ...rest, 
+      ...rest,
       sourceImage: resolvedSource,
       renderedImage: resolvedRender ?? null
      }
@@ -100,18 +100,20 @@ export const createProject = async ({ item, visibility = "private" }: CreateProj
      try {
       if (projectId) {
         await puter.kv.set(`project:${projectId}`, payload)
-        const response = await puter.workers.exec(`${PUTER_WORKER_URL}/api/projects/save`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ project: payload, visibility }),
-        })
-        if (!response.ok) {
-          console.warn('Worker save failed (project saved locally):', await response.text())
-          return payload
-        }
+        if (hasWorker) {
+          const response = await puter.workers.exec(`${PUTER_WORKER_URL}/api/projects/save`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ project: payload, visibility }),
+          })
+          if (!response.ok) {
+            console.warn('Worker save failed (project saved locally):', await response.text())
+            return payload
+          }
 
-        const data = (await response.json()) as { project?: DesignItem | null}
-        return data?.project ?? payload
+          const data = (await response.json()) as { project?: DesignItem | null}
+          return data?.project ?? payload
+        }
       }
      } catch (e) {
       console.warn("Worker unreachable (project saved locally):", e instanceof Error ? e.message : e)
@@ -176,4 +178,4 @@ export const getProjectById = async ({ id }: { id: string }) => {
   }
 
   return getProject(id);
-};
+}
