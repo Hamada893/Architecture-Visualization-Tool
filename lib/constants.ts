@@ -1,4 +1,9 @@
-export const PUTER_WORKER_URL = import.meta.env.VITE_PUTER_WORKER_URL || "";
+/**
+ * Worker execution URL from Puter (not a file link).
+ * Get it by: put your worker code in a .js file on Puter → Right‑click → "Publish as Worker" → use the URL Puter gives.
+ * Leave empty to use only local KV (no remote save/list/get).
+ */
+export const PUTER_WORKER_URL = (import.meta.env.VITE_PUTER_WORKER_URL || "").replace(/\/$/, "");
 
 // Storage Paths
 export const STORAGE_PATHS = {
