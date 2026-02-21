@@ -15,13 +15,8 @@ export const getCurrentUser = async () => {
   }
 }
 
-export const createProject = async ({ item, visibility = "private" }: CreateProjectParams):
+export const createProject = async ({ item, visibility = "private" }: CreateProjectParams): 
   Promise<DesignItem | null> => {
-    const hasWorker = Boolean(PUTER_WORKER_URL)
-    if (!hasWorker) {
-      console.warn(`Missing VITE_PUTER_WORKER_URL; using local KV only`)
-    }
-
     const projectId = item.id
 
     let hosting: HostingConfig | null = null
@@ -84,7 +79,7 @@ export const createProject = async ({ item, visibility = "private" }: CreateProj
       ? item.renderedImage
       : undefined
 
-    const {
+    const { 
       sourcePath: _sourcePath,
       renderedPath: _renderedPath,
       publicPath: _publicPath,
@@ -92,7 +87,7 @@ export const createProject = async ({ item, visibility = "private" }: CreateProj
      } = item
 
      const payload: DesignItem = {
-      ...rest,
+      ...rest, 
       sourceImage: resolvedSource,
       renderedImage: resolvedRender ?? null
      }
@@ -100,7 +95,8 @@ export const createProject = async ({ item, visibility = "private" }: CreateProj
      try {
       if (projectId) {
         await puter.kv.set(`project:${projectId}`, payload)
-        if (hasWorker) {
+
+        if (PUTER_WORKER_URL) {
           const response = await puter.workers.exec(`${PUTER_WORKER_URL}/api/projects/save`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -111,7 +107,7 @@ export const createProject = async ({ item, visibility = "private" }: CreateProj
             return payload
           }
 
-          const data = (await response.json()) as { project?: DesignItem | null}
+          const data = (await response.json()) as { project?: DesignItem | null }
           return data?.project ?? payload
         }
       }
@@ -178,4 +174,4 @@ export const getProjectById = async ({ id }: { id: string }) => {
   }
 
   return getProject(id);
-}
+};

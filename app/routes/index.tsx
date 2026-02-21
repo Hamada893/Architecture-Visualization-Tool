@@ -3,8 +3,8 @@ import { Button } from "components/ui/Button";
 import { ArrowRight, ArrowUpRight, Clock, Layers} from "lucide-react"
 import Upload from "components/Upload";
 import { useNavigate } from "react-router";
-import { useRef, useState } from "react"
-import { createProject } from "lib/puter.action";
+import { useRef, useState, useEffect } from "react"
+import { createProject, getProject, getProjects } from "lib/puter.action";
 
 export default function Home() {
   const navigate = useNavigate()
@@ -46,6 +46,14 @@ export default function Home() {
       }
     
   }
+  
+  useEffect(() => {
+    const fetchProjects = async () => {
+      const items = await getProjects()
+      setProjects(items)
+    }
+    fetchProjects()
+  }, [])
   
   return (
     <div className="home">
@@ -108,7 +116,7 @@ export default function Home() {
 
           <div className="projects-grid">
             {projects.map(({id, name, renderedImage, sourceImage, timestamp}) => (
-              <div key={id} className="project-card group">
+              <div key={id} className="project-card group" onClick={() => {navigate(`visualizer/${id}`)}}>
               <div className="preview">
                 <img 
                   src={renderedImage || sourceImage}

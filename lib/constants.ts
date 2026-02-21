@@ -2,6 +2,7 @@
  * Worker execution URL from Puter (not a file link).
  * Get it by: put your worker code in a .js file on Puter → Right‑click → "Publish as Worker" → use the URL Puter gives.
  * Leave empty to use only local KV (no remote save/list/get).
+ * After changing lib/puter.worker.js (e.g. CORS), redeploy the worker to this URL so the live endpoint returns the right headers.
  */
 export const PUTER_WORKER_URL = (import.meta.env.VITE_PUTER_WORKER_URL || "").replace(/\/$/, "");
 
