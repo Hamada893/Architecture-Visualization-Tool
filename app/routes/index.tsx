@@ -24,7 +24,7 @@ export default function Home() {
         timestamp: Date.now()
       }
 
-      const saved = await createProject(({ item: newItem}))
+      const saved = await createProject({ item: newItem })
       if(!saved) {
         console.error("Failed to create project")
         return false

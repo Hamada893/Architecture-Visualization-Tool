@@ -1,7 +1,7 @@
 import puter from "@heyputer/puter.js"
 import { getOrCreateHostingConfig, uploadImageToHosting } from "./puter.hosting"
 import { isHostedUrl } from "./utils"
-import { PUTER_WORKER_URL } from "./constants"
+import { PUTER_WORKER_API_BASE, PUTER_WORKER_URL } from "./constants"
 
 export const signIn = async () => await puter.auth.signIn()
 
@@ -97,7 +97,7 @@ export const createProject = async ({ item, visibility = "private" }: CreateProj
         await puter.kv.set(`project:${projectId}`, payload)
 
         if (PUTER_WORKER_URL) {
-          const response = await puter.workers.exec(`${PUTER_WORKER_URL}/api/projects/save`, {
+          const response = await puter.workers.exec(`${PUTER_WORKER_API_BASE}/api/projects/save`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ project: payload, visibility }),
@@ -133,24 +133,31 @@ export const getProject = async (id: string): Promise<DesignItem | null> => {
   }
 }
 
-export const getProjects = async () => {
-  if (!PUTER_WORKER_URL) {
-    console.warn(`Missing VITE_PUTER_WORKER_URL; skip history`)
-    return []
+export const getProjects = async (): Promise<DesignItem[]> => {
+  if (PUTER_WORKER_URL) {
+    try {
+      const response = await puter.workers.exec(`${PUTER_WORKER_API_BASE}/api/projects/list`, { method: "GET" })
+      if (response.ok) {
+        const data = (await response.json()) as { projects?: DesignItem[] | null }
+        if (Array.isArray(data?.projects)) return data.projects
+      } else {
+        console.warn("Worker list failed:", await response.text())
+      }
+    } catch (e) {
+      console.warn("Worker unreachable (using local KV for projects):", e instanceof Error ? e.message : e)
+    }
+  } else {
+    console.warn("Missing VITE_PUTER_WORKER_URL; using local KV for projects")
   }
 
   try {
-    const response = await puter.workers.exec(`${PUTER_WORKER_URL}/api/projects/list`, {method: 'GET'})
-
-    if (!response.ok) {
-      console.error('Failed to fetch history', await response.text())
-      return []
-    }
-
-    const data = (await response.json()) as { projects ?:  DesignItem[] | null}
-    return Array.isArray(data?.projects) ? data?.projects : []
+    const list = (await puter.kv.list("project", true)) as Array<{ key?: string; value?: unknown }> | unknown[]
+    const items = Array.isArray(list) ? list : []
+    return items
+      .map((entry) => (entry && typeof entry === "object" && "value" in entry ? (entry as { value: unknown }).value : entry))
+      .filter((v): v is DesignItem => v != null && typeof v === "object" && "id" in v && "name" in v)
   } catch (e) {
-    console.error(`Failed to get projects: `, e)
+    console.error("Failed to list projects from KV:", e)
     return []
   }
 }
@@ -161,7 +168,7 @@ export const getProjectById = async ({ id }: { id: string }) => {
   if (PUTER_WORKER_URL) {
     try {
       const response = await puter.workers.exec(
-        `${PUTER_WORKER_URL}/api/projects/get?id=${encodeURIComponent(id)}`,
+        `${PUTER_WORKER_API_BASE}/api/projects/get?id=${encodeURIComponent(id)}`,
         { method: "GET" },
       );
       if (response.ok) {

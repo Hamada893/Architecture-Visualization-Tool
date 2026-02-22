@@ -6,6 +6,12 @@
  */
 export const PUTER_WORKER_URL = (import.meta.env.VITE_PUTER_WORKER_URL || "").replace(/\/$/, "");
 
+/**
+ * Base URL for worker API calls. In dev we use '' so requests go to same-origin and Vite proxies to the worker (avoids CORS).
+ * In production we use the full PUTER_WORKER_URL.
+ */
+export const PUTER_WORKER_API_BASE = import.meta.env.DEV ? "" : PUTER_WORKER_URL;
+
 // Storage Paths
 export const STORAGE_PATHS = {
     ROOT: "roomify",
