@@ -6,6 +6,7 @@ import { Box, Download, RefreshCcw, Share2, X } from 'lucide-react'
 import { Button } from "components/ui/Button"
 import { Bouncy } from 'ldrs/react'
 import 'ldrs/react/Bouncy.css'
+import { ReactCompareSlider, ReactCompareSliderImage } from "react-compare-slider"
 
 const VisualizerId = () => {
   const navigate = useNavigate()
@@ -201,6 +202,33 @@ const VisualizerId = () => {
               <h3>Before and After</h3>
             </div>
             <div className="hint">Drag to compare</div>
+          </div>
+
+          <div className="compare-stage">
+            {project?.sourceImage && currentImage ? (
+              <ReactCompareSlider
+                defaultValue={50}
+                style={{ width: '100%', height: 'auto' }}
+                itemOne={
+                  <ReactCompareSliderImage 
+                    src={project?.sourceImage} 
+                    alt="Original Image" 
+                    className="compare-img"
+                  />
+                }
+                itemTwo={
+                  <ReactCompareSliderImage 
+                    src={currentImage || project?.renderedImage} 
+                    alt="Generated Image" 
+                    className="compare-img"
+                  />
+                }
+              />
+            ) : (
+              <div className="compare-fallback">
+                <img src={project?.sourceImage} alt="Original Image" className="compare-fallback-img" />
+              </div>
+            )}
           </div>
         </div>
       </section>
