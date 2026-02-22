@@ -1,6 +1,7 @@
 import puter from "@heyputer/puter.js"
 import { getOrCreateHostingConfig, uploadImageToHosting } from "./puter.hosting"
 import { isHostedUrl } from "./utils"
+import { PUTER_WORKER_API_BASE, PUTER_WORKER_URL } from "./constants"
 
 export const signIn = async () => await puter.auth.signIn()
 
@@ -14,7 +15,7 @@ export const getCurrentUser = async () => {
   }
 }
 
-export const createProject = async ({ item }: CreateProjectParams): 
+export const createProject = async ({ item, visibility = "private" }: CreateProjectParams): 
   Promise<DesignItem | null> => {
     const projectId = item.id
 
@@ -91,18 +92,33 @@ export const createProject = async ({ item }: CreateProjectParams):
       renderedImage: resolvedRender ?? null
      }
 
-     try {
-      if (projectId) {
-        await puter.kv.set(`project:${projectId}`, payload)
-      }
-     } catch (e) {
-      console.error("Failed to persist project", {
-        projectId,
-        error: e,
-      })
-     }
+     if (projectId) {
+        try {
+          await puter.kv.set(`project:${projectId}`, payload)
+        } catch (e) {
+          console.error("Failed to save project locally:", e)
+          return null
+        }
 
-     return payload
+        if (PUTER_WORKER_URL) {
+          try {
+            const response = await puter.workers.exec(`${PUTER_WORKER_API_BASE}/api/projects/save`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ project: payload, visibility }),
+            })
+            if (!response.ok) {
+              console.warn('Worker save failed (project saved locally):', await response.text())
+              return payload
+            }
+
+            const data = (await response.json()) as { project?: DesignItem | null }
+            return data?.project ?? payload
+          } catch (e) {
+            console.warn("Worker unreachable (project saved locally):", e instanceof Error ? e.message : e)
+          }
+        }
+      }
   }
 
 export const getProject = async (id: string): Promise<DesignItem | null> => {
@@ -119,3 +135,53 @@ export const getProject = async (id: string): Promise<DesignItem | null> => {
     return null
   }
 }
+
+export const getProjects = async (): Promise<DesignItem[]> => {
+  if (PUTER_WORKER_URL) {
+    try {
+      const response = await puter.workers.exec(`${PUTER_WORKER_API_BASE}/api/projects/list`, { method: "GET" })
+      if (response.ok) {
+        const data = (await response.json()) as { projects?: DesignItem[] | null }
+        if (Array.isArray(data?.projects)) return data.projects
+      } else {
+        console.warn("Worker list failed:", await response.text())
+      }
+    } catch (e) {
+      console.warn("Worker unreachable (using local KV for projects):", e instanceof Error ? e.message : e)
+    }
+  } else {
+    console.warn("Missing VITE_PUTER_WORKER_URL; using local KV for projects")
+  }
+
+  try {
+    const list = (await puter.kv.list("project", true)) as Array<{ key?: string; value?: unknown }> | unknown[]
+    const items = Array.isArray(list) ? list : []
+    return items
+      .map((entry) => (entry && typeof entry === "object" && "value" in entry ? (entry as { value: unknown }).value : entry))
+      .filter((v): v is DesignItem => v != null && typeof v === "object" && "id" in v && "name" in v)
+  } catch (e) {
+    console.error("Failed to list projects from KV:", e)
+    return []
+  }
+}
+
+export const getProjectById = async ({ id }: { id: string }) => {
+  if (!id) return null;
+
+  if (PUTER_WORKER_URL) {
+    try {
+      const response = await puter.workers.exec(
+        `${PUTER_WORKER_API_BASE}/api/projects/get?id=${encodeURIComponent(id)}`,
+        { method: "GET" },
+      );
+      if (response.ok) {
+        const data = (await response.json()) as { project?: DesignItem | null };
+        if (data?.project != null) return data.project;
+      }
+    } catch {
+      // Worker unreachable (CORS, 404, network); fall back to local KV
+    }
+  }
+
+  return getProject(id);
+};
