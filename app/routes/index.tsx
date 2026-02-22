@@ -2,7 +2,7 @@ import Navbar from "components/Navbar";
 import { Button } from "components/ui/Button";
 import { ArrowRight, ArrowUpRight, Clock, Layers} from "lucide-react"
 import Upload from "components/Upload";
-import { useNavigate } from "react-router";
+import { useNavigate, useOutletContext } from "react-router";
 import { useRef, useState, useEffect } from "react"
 import { createProject, getProject, getProjects } from "lib/puter.action";
 
@@ -10,6 +10,8 @@ export default function Home() {
   const navigate = useNavigate()
   const [projects, setProjects] = useState<DesignItem[]>([])
   const isCreatingProjectRef = useRef(false)
+  const {userName} = useOutletContext<AuthContext>()
+
 
   const handleUploadComplete = async (base64Image: string) => {
       if (isCreatingProjectRef.current) return false
@@ -135,7 +137,7 @@ export default function Home() {
                     <Clock size={12}/>
                     <span>{new Date(timestamp).toLocaleDateString()}</span>
 
-                    <span>By John Doe</span>
+                    <span>By {userName}</span>
                   </div>
                 </div>
                 <div className="arrow">
