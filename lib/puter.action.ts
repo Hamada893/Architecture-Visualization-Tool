@@ -92,30 +92,33 @@ export const createProject = async ({ item, visibility = "private" }: CreateProj
       renderedImage: resolvedRender ?? null
      }
 
-     try {
-      if (projectId) {
-        await puter.kv.set(`project:${projectId}`, payload)
+     if (projectId) {
+        try {
+          await puter.kv.set(`project:${projectId}`, payload)
+        } catch (e) {
+          console.error("Failed to save project locally:", e)
+          return null
+        }
 
         if (PUTER_WORKER_URL) {
-          const response = await puter.workers.exec(`${PUTER_WORKER_API_BASE}/api/projects/save`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ project: payload, visibility }),
-          })
-          if (!response.ok) {
-            console.warn('Worker save failed (project saved locally):', await response.text())
-            return payload
-          }
+          try {
+            const response = await puter.workers.exec(`${PUTER_WORKER_API_BASE}/api/projects/save`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ project: payload, visibility }),
+            })
+            if (!response.ok) {
+              console.warn('Worker save failed (project saved locally):', await response.text())
+              return payload
+            }
 
-          const data = (await response.json()) as { project?: DesignItem | null }
-          return data?.project ?? payload
+            const data = (await response.json()) as { project?: DesignItem | null }
+            return data?.project ?? payload
+          } catch (e) {
+            console.warn("Worker unreachable (project saved locally):", e instanceof Error ? e.message : e)
+          }
         }
       }
-     } catch (e) {
-      console.warn("Worker unreachable (project saved locally):", e instanceof Error ? e.message : e)
-     }
-
-     return payload
   }
 
 export const getProject = async (id: string): Promise<DesignItem | null> => {
