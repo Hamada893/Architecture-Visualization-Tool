@@ -123,6 +123,8 @@ const VisualizerId = () => {
       </nav>
       <section className="content">
         <div className="panel">
+
+        
           <div className="panel-header">
             <div className="panel-meta">
               <p>Project</p>
@@ -190,6 +192,15 @@ const VisualizerId = () => {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+        <div className="panel compare">
+          <div className="panel-header">
+            <div className="panel-meta">
+              <p>Comparison</p>
+              <h3>Before and After</h3>
+            </div>
+            <div className="hint">Drag to compare</div>
           </div>
         </div>
       </section>
