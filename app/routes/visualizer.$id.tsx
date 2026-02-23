@@ -18,6 +18,7 @@ const VisualizerId = () => {
   const {userId} = useOutletContext<AuthContext>()
   const [project, setProject] = useState<DesignItem | null>(null)
   const [isProjectLoading, setIsProjectLoading] = useState(true)
+  const [isCopied, setIsCopied] = useState(false)
   const handleBack = () => navigate('/')
 
   const handleExport = async () => {
@@ -44,6 +45,10 @@ const VisualizerId = () => {
     if (!currentImage) return
     const url = window.location.href
     await navigator.clipboard.writeText(url)
+    setIsCopied(true)
+    setTimeout(() => {
+      setIsCopied(false)
+    }, 2000)
   }
 
   const runGeneration = async (item: DesignItem) => {
@@ -177,7 +182,7 @@ const VisualizerId = () => {
                 style={{ cursor: 'pointer' }}
                 disabled={!currentImage}
               >
-                <Share2 className="w-4 h-4 mr-2"/> Share
+                <Share2 className="w-4 h-4 mr-2"/> {isCopied ? 'Copied!' : 'Share'}  
               </Button>
             </div>
           </div>
