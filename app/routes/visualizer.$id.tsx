@@ -7,6 +7,7 @@ import { Button } from "components/ui/Button"
 import { Bouncy } from 'ldrs/react'
 import 'ldrs/react/Bouncy.css'
 import { ReactCompareSlider, ReactCompareSliderImage } from "react-compare-slider"
+import CopyButton from "components/ui/CopyButton"
 
 const VisualizerId = () => {
   const navigate = useNavigate()
@@ -138,8 +139,9 @@ const VisualizerId = () => {
           size="sm" 
           onClick={handleBack}
           className="exit"
+          style={{ cursor: 'pointer' }}
         >
-          <X className="icon" /> Exit Editor
+          <X className="icon"  /> Exit Editor
         </Button>
       </nav>
       <section className="content">
@@ -163,14 +165,14 @@ const VisualizerId = () => {
               >
                 <Download className="w-4 h-4 mr-2"/> Export
               </Button>
-              <Button
+              <CopyButton
                 size="sm"
                 onClick={() => {}}
                 className="share"
                 style={{ cursor: 'pointer' }}
               >
                 <Share2 className="w-4 h-4 mr-2"/> Share
-              </Button>
+              </CopyButton>
             </div>
           </div>
 
