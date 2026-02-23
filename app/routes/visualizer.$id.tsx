@@ -1,11 +1,12 @@
 import { useEffect, useState, useRef } from "react"
 import { useNavigate, useOutletContext, useParams } from "react-router"
-import { createProject, getProject, getProjectById } from "lib/puter.action"
+import { createProject, getProjectById } from "lib/puter.action"
 import { generate3DView } from "lib/ai.action"
 import { Box, Download, RefreshCcw, Share2, X } from 'lucide-react'
 import { Button } from "components/ui/Button"
 import { Bouncy } from 'ldrs/react'
 import 'ldrs/react/Bouncy.css'
+import { ReactCompareSlider, ReactCompareSliderImage } from "react-compare-slider"
 
 const VisualizerId = () => {
   const navigate = useNavigate()
@@ -17,7 +18,38 @@ const VisualizerId = () => {
   const {userId} = useOutletContext<AuthContext>()
   const [project, setProject] = useState<DesignItem | null>(null)
   const [isProjectLoading, setIsProjectLoading] = useState(true)
+  const [isCopied, setIsCopied] = useState(false)
   const handleBack = () => navigate('/')
+
+  const handleExport = async () => {
+    if (!currentImage) return
+    const filename = `rendered-${project?.name ?? id ?? 'image'}.png`.replace(/\s+/g, '-')
+    if (currentImage.startsWith('data:')) {
+      const a = document.createElement('a')
+      a.href = currentImage
+      a.download = filename
+      a.click()
+      return
+    }
+    const res = await fetch(currentImage)
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const handleShare = async () => {
+    if (!currentImage) return
+    const url = window.location.href
+    await navigator.clipboard.writeText(url)
+    setIsCopied(true)
+    setTimeout(() => {
+      setIsCopied(false)
+    }, 2000)
+  }
 
   const runGeneration = async (item: DesignItem) => {
     if (!id || !item.sourceImage) return
@@ -117,12 +149,15 @@ const VisualizerId = () => {
           size="sm" 
           onClick={handleBack}
           className="exit"
+          style={{ cursor: 'pointer' }}
         >
-          <X className="icon" /> Exit Editor
+          <X className="icon"  /> Exit Editor
         </Button>
       </nav>
       <section className="content">
         <div className="panel">
+
+        
           <div className="panel-header">
             <div className="panel-meta">
               <p>Project</p>
@@ -133,18 +168,21 @@ const VisualizerId = () => {
             <div className="panel-actions">
               <Button 
                 size="sm" 
-                onClick={() => {}}
+                onClick={handleExport}
                 className="export"
                 disabled={!currentImage}
+                style={{ cursor: 'pointer' }}
               >
                 <Download className="w-4 h-4 mr-2"/> Export
               </Button>
               <Button
                 size="sm"
-                onClick={() => {}}
+                onClick={handleShare} 
                 className="share"
+                style={{ cursor: 'pointer' }}
+                disabled={!currentImage}
               >
-                <Share2 className="w-4 h-4 mr-2"/> Share
+                <Share2 className="w-4 h-4 mr-2"/> {isCopied ? 'Copied!' : 'Share'}  
               </Button>
             </div>
           </div>
@@ -188,6 +226,42 @@ const VisualizerId = () => {
                   <span className="title">Rendering <Bouncy speed='1.3' size='15'/></span>
                   <span className="subtitle">Generating your 3D visualization <Bouncy speed='1.3' size='10' color='gray'/> </span>
                 </div>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="panel compare">
+          <div className="panel-header">
+            <div className="panel-meta">
+              <p>Comparison</p>
+              <h3>Before and After</h3>
+            </div>
+            <div className="hint">Drag to compare</div>
+          </div>
+
+          <div className="compare-stage">
+            {project?.sourceImage && currentImage ? (
+              <ReactCompareSlider
+                defaultValue={50}
+                style={{ width: '100%', height: 'auto' }}
+                itemOne={
+                  <ReactCompareSliderImage 
+                    src={project?.sourceImage} 
+                    alt="Original Image" 
+                    className="compare-img"
+                  />
+                }
+                itemTwo={
+                  <ReactCompareSliderImage 
+                    src={(currentImage || project?.renderedImage) ?? undefined} 
+                    alt="Generated Image" 
+                    className="compare-img"
+                  />
+                }
+              />
+            ) : (
+              <div className="compare-fallback">
+                <img src={project?.sourceImage} alt="Original Image" className="compare-fallback-img" />
               </div>
             )}
           </div>
