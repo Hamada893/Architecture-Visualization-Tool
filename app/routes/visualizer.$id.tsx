@@ -1,13 +1,12 @@
 import { useEffect, useState, useRef } from "react"
 import { useNavigate, useOutletContext, useParams } from "react-router"
-import { createProject, getProject, getProjectById } from "lib/puter.action"
+import { createProject, getProjectById } from "lib/puter.action"
 import { generate3DView } from "lib/ai.action"
 import { Box, Download, RefreshCcw, Share2, X } from 'lucide-react'
 import { Button } from "components/ui/Button"
 import { Bouncy } from 'ldrs/react'
 import 'ldrs/react/Bouncy.css'
 import { ReactCompareSlider, ReactCompareSliderImage } from "react-compare-slider"
-import CopyButton from "components/ui/CopyButton"
 
 const VisualizerId = () => {
   const navigate = useNavigate()
@@ -39,6 +38,12 @@ const VisualizerId = () => {
     a.download = filename
     a.click()
     URL.revokeObjectURL(url)
+  }
+
+  const handleShare = async () => {
+    if (!currentImage) return
+    const url = window.location.href
+    await navigator.clipboard.writeText(url)
   }
 
   const runGeneration = async (item: DesignItem) => {
@@ -165,14 +170,15 @@ const VisualizerId = () => {
               >
                 <Download className="w-4 h-4 mr-2"/> Export
               </Button>
-              <CopyButton
+              <Button
                 size="sm"
-                onClick={() => {}}
+                onClick={handleShare} 
                 className="share"
                 style={{ cursor: 'pointer' }}
+                disabled={!currentImage}
               >
                 <Share2 className="w-4 h-4 mr-2"/> Share
-              </CopyButton>
+              </Button>
             </div>
           </div>
 
