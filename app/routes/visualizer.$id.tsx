@@ -20,6 +20,26 @@ const VisualizerId = () => {
   const [isProjectLoading, setIsProjectLoading] = useState(true)
   const handleBack = () => navigate('/')
 
+  const handleExport = async () => {
+    if (!currentImage) return
+    const filename = `rendered-${project?.name ?? id ?? 'image'}.png`.replace(/\s+/g, '-')
+    if (currentImage.startsWith('data:')) {
+      const a = document.createElement('a')
+      a.href = currentImage
+      a.download = filename
+      a.click()
+      return
+    }
+    const res = await fetch(currentImage)
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   const runGeneration = async (item: DesignItem) => {
     if (!id || !item.sourceImage) return
 
@@ -136,9 +156,10 @@ const VisualizerId = () => {
             <div className="panel-actions">
               <Button 
                 size="sm" 
-                onClick={() => {}}
+                onClick={handleExport}
                 className="export"
                 disabled={!currentImage}
+                style={{ cursor: 'pointer' }}
               >
                 <Download className="w-4 h-4 mr-2"/> Export
               </Button>
@@ -146,6 +167,7 @@ const VisualizerId = () => {
                 size="sm"
                 onClick={() => {}}
                 className="share"
+                style={{ cursor: 'pointer' }}
               >
                 <Share2 className="w-4 h-4 mr-2"/> Share
               </Button>
@@ -218,7 +240,7 @@ const VisualizerId = () => {
                 }
                 itemTwo={
                   <ReactCompareSliderImage 
-                    src={currentImage || project?.renderedImage} 
+                    src={(currentImage || project?.renderedImage) ?? undefined} 
                     alt="Generated Image" 
                     className="compare-img"
                   />
