@@ -13,7 +13,7 @@ type UploadProps = {
 }
 
 const Upload = ({ onComplete }: UploadProps) => {
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg']
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp']
 
   const [file, setFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -110,7 +110,7 @@ const Upload = ({ onComplete }: UploadProps) => {
           <input 
             type='file'
             className='drop-input'
-            accept='.jpg, .jpeg, .png'
+            accept='.jpg, .jpeg, .png, .webp'
             disabled={!isSignedIn}
             onChange={handleFileChange}
           />
