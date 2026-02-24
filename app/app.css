@@ -59,7 +59,7 @@
     @apply inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed;
 
     &.btn--primary {
-      @apply bg-primary text-white hover:bg-[#EA580C] shadow-sm;
+      @apply bg-blue-600 text-white hover:bg-blue-600 shadow-sm;
     }
 
     &.btn--secondary {
@@ -145,7 +145,7 @@
         }
 
         .login {
-          @apply text-xs font-bold uppercase tracking-wide text-zinc-900 hover:text-primary transition-colors;
+          @apply text-xs font-bold uppercase tracking-wide text-zinc-900 hover:text-blue-600 transition-colors;
         }
 
         .cta {
@@ -165,7 +165,7 @@
         @apply w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4;
 
         .alert {
-          @apply text-primary w-6 h-6;
+          @apply text-blue-600 w-6 h-6;
         }
       }
 
@@ -181,7 +181,7 @@
         @apply flex flex-col space-y-3;
 
         .confirm {
-          @apply bg-primary hover:bg-orange-600 text-white;
+          @apply bg-blue-600 hover:bg-blue-600 text-white;
         }
 
         .cancel {
@@ -198,10 +198,10 @@
       @apply relative h-48 rounded-xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center cursor-pointer bg-zinc-50 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-100;
 
       &.is-dragging {
-        @apply border-primary bg-orange-50;
+        @apply border-blue-600 bg-orange-50;
 
         .drop-icon {
-          @apply bg-orange-100 text-primary;
+          @apply bg-orange-100 text-blue-600;
         }
       }
 
@@ -252,7 +252,7 @@
           @apply w-full max-w-50 h-1.5 bg-zinc-100 rounded-full mt-3 overflow-hidden;
 
           .bar {
-            @apply h-full bg-primary transition-all duration-300 ease-out;
+            @apply h-full bg-blue-600 transition-all duration-300 ease-out;
           }
         }
 
@@ -322,7 +322,7 @@
           @apply flex flex-wrap items-center gap-3;
 
           .export {
-            @apply bg-primary text-white hover:bg-orange-600 h-9 border-none shadow-sm;
+            @apply bg-blue-600 text-white hover:bg-blue-600 h-9 border-none shadow-sm;
           }
 
           .share {
@@ -359,7 +359,7 @@
             @apply bg-white px-6 py-4 rounded-xl border border-zinc-200 flex flex-col items-center shadow-2xl;
 
             .spinner {
-              @apply w-8 h-8 mb-3 animate-spin text-primary;
+              @apply w-8 h-8 mb-3 animate-spin text-blue-600;
             }
 
             .title {
@@ -433,7 +433,7 @@
         @apply flex flex-col sm:flex-row gap-4 justify-center mb-16;
 
         .cta {
-          @apply inline-flex items-center justify-center rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background px-8 py-3 text-sm uppercase tracking-wide font-bold bg-primary text-white hover:bg-[#ea580c] shadow-md;
+          @apply inline-flex items-center justify-center rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background px-8 py-3 text-sm uppercase tracking-wide font-bold bg-blue-600 text-white hover:bg-blue-600 shadow-md;
 
           .icon {
             @apply ml-2 w-4 h-4;
@@ -459,10 +459,10 @@
             @apply text-center mb-6;
 
             .upload-icon {
-              @apply w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3;
+              @apply w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3;
 
               .icon {
-                @apply text-orange-500 w-6 h-6;
+                @apply text-blue-600 w-6 h-6;
               }
             }
 
@@ -530,7 +530,7 @@
               @apply p-5 flex justify-between items-center bg-white border-t border-zinc-100 grow;
 
               h3 {
-                @apply text-lg font-serif font-bold text-zinc-900 group-hover:text-primary transition-colors;
+                @apply text-lg font-serif font-bold text-zinc-900 group-hover:text-blue-600 transition-colors;
               }
 
               .meta {
@@ -546,7 +546,7 @@
               }
 
               .arrow {
-                @apply w-10 h-10 rounded-full bg-zinc-50 border border-zinc-200 flex items-center justify-center text-zinc-400 group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all duration-300;
+                @apply w-10 h-10 rounded-full bg-zinc-50 border border-zinc-200 flex items-center justify-center text-zinc-400 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all duration-300;
               }
             }
           }
