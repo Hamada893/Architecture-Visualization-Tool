@@ -1,5 +1,6 @@
 import Navbar from "components/Navbar";
 import { Button } from "components/ui/Button";
+import GithubBtn from "components/ui/GithubBtn";
 import { ArrowRight, ArrowUpRight, Clock, Layers} from "lucide-react"
 import Upload from "components/Upload";
 import { useNavigate, useOutletContext } from "react-router";
@@ -59,6 +60,9 @@ export default function Home() {
   
   return (
     <div className="home">
+      <div className="github-btn-fixed">
+        <GithubBtn />
+      </div>
       <Navbar />
 
       <section className="hero">
