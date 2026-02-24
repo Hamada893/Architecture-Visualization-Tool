@@ -4,6 +4,7 @@ import { createProject, getProjectById } from "lib/puter.action"
 import { generate3DView } from "lib/ai.action"
 import { Box, Download, RefreshCcw, Share2, X } from 'lucide-react'
 import { Button } from "components/ui/Button"
+import GithubBtn from "components/ui/GithubBtn"
 import { Bouncy } from 'ldrs/react'
 import 'ldrs/react/Bouncy.css'
 import { ReactCompareSlider, ReactCompareSliderImage } from "react-compare-slider"
@@ -139,6 +140,9 @@ const VisualizerId = () => {
 
   return (
     <div className="visualizer">
+      <div className="github-btn-fixed">
+        <GithubBtn />
+      </div>
       <nav className="topbar" onClick={handleBack}>
         <div className="brand">
           <Box className='logo'/>
